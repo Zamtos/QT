@@ -254,13 +254,13 @@ class MainWindow(QMainWindow):
         self.vLayout3 = QGridLayout()
         self.result = QLabel(self.latlong)
         self.latitude = QLabel('Latitude')
-        self.longitude = QLabel('longitude')
+        self.longitude = QLabel('Longitude')
         self.result = QLabel('')
         self.result2 = QLabel('')
         self.rightascension = QLabel('R.A.')
-        self.latitudeEdit = QTextEdit()
+        self.latitudeEdit = QLineEdit()
         self.latitudeEdit.setFixedHeight(24)
-        self.longitudeEdit = QTextEdit()
+        self.longitudeEdit = QLineEdit()
         self.longitudeEdit.setFixedHeight(24)
 #        self.latitude = QTextEdit()
 #        self.latitude.setFixedHeight(24)
@@ -288,11 +288,12 @@ class MainWindow(QMainWindow):
 
     def handleButton3(self):
         if self.timerIsUp == False:
-            if self.latitudeEdit == "" and self.longitudeEdit == "":
-                self.o.lon, self.o.lat = '17.03333', '51.100000' # Współrzędne Wrocławia
+            #zastąpic wlasna logika
+            if self.latitudeEdit.text() and self.longitudeEdit.text():
+                self.o.lat = self.latitudeEdit.text()
+                self.o.lon = self.longitudeEdit.text()
             else:
-                self.o.lat = self.latitudeEdit.toPlainText()
-                self.o.lon = self.longitudeEdit.toPlainText()
+                self.o.lon, self.o.lat = '17.03333', '51.100000' # Współrzędne Wrocławia
             self.timer.start(1000)
             self.timerIsUp = True
         else:
