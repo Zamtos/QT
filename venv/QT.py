@@ -68,13 +68,16 @@ class MainWindow(QMainWindow):
         self.createToolBars()
         self.createStatusBar()
         self.createDockWindows()
-
         self.setWindowTitle("Panel Słoneczny")
-
+        self.rad = 0
+        self.o = 0
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.dLocation)
+        self.timerIsUp = False
         self.newLetter()
-        self.dLocation()
         self.s = ephem.Sun()
-        self.s.compute(epoch=ephem.now())
+        self.o = ephem.Observer()
+
 #        self.setTime()
 
 #    def setTime(self):
@@ -152,17 +155,15 @@ class MainWindow(QMainWindow):
         cursor.insertText("Text", textFormat)
 
     def dLocation(self):
-        s = ephem.Sun()
-        s.compute(epoch=ephem.now())
-        print("R.A.: %s DEC.: %s" % (s.a_ra, s.a_dec))
-        o = ephem.Observer()
-        o.lon, o.lat = '17.03333', '51.100000' # Współrzędne Wrocławia
-        o.date = ephem.now()  # 00:22:07 EDT 06:22:07 UT+1
-        s.compute(o)
-        hour_angle = o.sidereal_time() - s.ra
+        self.s = ephem.Sun()
+        self.s.compute(epoch=ephem.now())
+        self.o.date = ephem.now()  # 00:22:07 EDT 06:22:07 UT+1
+        self.s.compute(self.o)
+        hour_angle = self.o.sidereal_time() - self.s.ra
         t = ephem.hours(hour_angle + ephem.hours('12:00')).norm  # .norm for 0..24
-        rad = str(ephem.hours(hour_angle + ephem.hours('12:00')).norm)
-        print("HOUR ANGLE: %s SIDERAL TIME: %s" % (rad, o.sidereal_time()))
+        self.rad = str(ephem.hours(hour_angle + ephem.hours('12:00')).norm)
+        self.result.setText("R.A.: " + str(self.s.a_ra) + " DEC.: " + str(self.s.a_dec))
+        self.result2.setText("HOUR ANGLE: " + str(self.rad) + " SIDERAL TIME: " + str(self.o.sidereal_time()))
 
 
     def createActions(self):
@@ -254,11 +255,13 @@ class MainWindow(QMainWindow):
         self.result = QLabel(self.latlong)
         self.latitude = QLabel('Latitude')
         self.longitude = QLabel('longitude')
-        self.result = QLabel('Result')
+        self.result = QLabel('')
+        self.result2 = QLabel('')
         self.rightascension = QLabel('R.A.')
         self.latitudeEdit = QTextEdit()
+        self.latitudeEdit.setFixedHeight(24)
         self.longitudeEdit = QTextEdit()
-        self.resultEdit = QTextEdit()
+        self.longitudeEdit.setFixedHeight(24)
 #        self.latitude = QTextEdit()
 #        self.latitude.setFixedHeight(24)
 #        self.longitude = QTextEdit()
@@ -272,6 +275,7 @@ class MainWindow(QMainWindow):
         self.vLayout3.addWidget(self.rightascension)
         self.vLayout3.addWidget(self.button)
         self.vLayout3.addWidget(self.result)
+        self.vLayout3.addWidget(self.result2)
 #        self.vLayout3.addWidget(self.resultEdit)
         self.multiWidget3.setLayout(self.vLayout3);
         dock.setWidget(self.multiWidget3);
@@ -283,10 +287,20 @@ class MainWindow(QMainWindow):
 
 
     def handleButton3(self):
+        if self.timerIsUp == False:
+            if self.latitudeEdit == "" and self.longitudeEdit == "":
+                self.o.lon, self.o.lat = '17.03333', '51.100000' # Współrzędne Wrocławia
+            else:
+                self.o.lat = self.latitudeEdit.toPlainText()
+                self.o.lon = self.longitudeEdit.toPlainText()
+            self.timer.start(1000)
+            self.timerIsUp = True
+        else:
+            self.timer.stop()
+            self.timerIsUp = False
 #        s = ephem.Sun()
 #        s.compute(epoch=ephem.now())
 #        print("R.A.: %s DEC.: %s" % (s.a_ra, s.a_dec))
-        self.result.setText(s.ra)
 
 
 
