@@ -48,16 +48,18 @@ from PySide2.QtGui import (QFont, QIcon, QKeySequence, QTextCharFormat,
         QTextCursor, QTextTableFormat)
 from PySide2.QtPrintSupport import QPrintDialog, QPrinter
 from PySide2.QtWidgets import (QAction, QApplication, QDialog, QDockWidget,
-        QFileDialog, QListWidget, QMainWindow, QMessageBox, QTextEdit)
+        QFileDialog, QListWidget, QMainWindow, QMessageBox, QTextEdit, QLabel, QVBoxLayout, QWidget, QPushButton, QGridLayout, QLineEdit)
 
-import dockwidgets_rc
+##import dockwidgets_rc
 import datetime
+import ephem
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
+        self.latlong = "0"
         self.textEdit = QTextEdit()
         self.setCentralWidget(self.textEdit)
 
@@ -70,7 +72,9 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Panel Słoneczny")
 
         self.newLetter()
-#        self.dLocation()
+        self.dLocation()
+        self.s = ephem.Sun()
+        self.s.compute(epoch=ephem.now())
 #        self.setTime()
 
 #    def setTime(self):
@@ -147,204 +151,143 @@ class MainWindow(QMainWindow):
             cursor.insertBlock()
         cursor.insertText("Text", textFormat)
 
+    def dLocation(self):
+        s = ephem.Sun()
+        s.compute(epoch=ephem.now())
+        print("R.A.: %s DEC.: %s" % (s.a_ra, s.a_dec))
+        o = ephem.Observer()
+        o.lon, o.lat = '17.03333', '51.100000' # Współrzędne Wrocławia
+        o.date = ephem.now()  # 00:22:07 EDT 06:22:07 UT+1
+        s.compute(o)
+        hour_angle = o.sidereal_time() - s.ra
+        t = ephem.hours(hour_angle + ephem.hours('12:00')).norm  # .norm for 0..24
+        rad = str(ephem.hours(hour_angle + ephem.hours('12:00')).norm)
+        print("HOUR ANGLE: %s SIDERAL TIME: %s" % (rad, o.sidereal_time()))
 
-    def print_(self):
-        document = self.textEdit.document()
-        printer = QPrinter()
-
-        dlg = QPrintDialog(printer, self)
-        if dlg.exec_() != QDialog.Accepted:
-            return
-
-        document.print_(printer)
-
-        self.statusBar().showMessage("Ready", 2000)
-
-    def save(self):
-        filename, _ = QFileDialog.getSaveFileName(self,
-                "Choose a file name", '.', "HTML (*.html *.htm)")
-        if not filename:
-            return
-
-        file = QFile(filename)
-        if not file.open(QFile.WriteOnly | QFile.Text):
-            QMessageBox.warning(self, "Dock Widgets",
-                    "Cannot write file %s:\n%s." % (filename, file.errorString()))
-            return
-
-        out = QTextStream(file)
-        QApplication.setOverrideCursor(Qt.WaitCursor)
-        out << self.textEdit.toHtml()
-        QApplication.restoreOverrideCursor()
-
-        self.statusBar().showMessage("Saved '%s'" % filename, 2000)
-
-    def undo(self):
-        document = self.textEdit.document()
-        document.undo()
-
-    def insertCustomer(self, customer):
-        if not customer:
-            return
-        customerList = customer.split(', ')
-        document = self.textEdit.document()
-        cursor = document.find('NAME')
-        if not cursor.isNull():
-            cursor.beginEditBlock()
-            cursor.insertText(customerList[0])
-            oldcursor = cursor
-            cursor = document.find('ADDRESS')
-            if not cursor.isNull():
-                for i in customerList[1:]:
-                    cursor.insertBlock()
-                    cursor.insertText(i)
-                cursor.endEditBlock()
-            else:
-                oldcursor.endEditBlock()
-
-    def addParagraph(self, paragraph):
-        if not paragraph:
-            return
-        document = self.textEdit.document()
-        cursor = document.find("Yours sincerely,")
-        if cursor.isNull():
-            return
-        cursor.beginEditBlock()
-        cursor.movePosition(QTextCursor.PreviousBlock, QTextCursor.MoveAnchor,
-                2)
-        cursor.insertBlock()
-        cursor.insertText(paragraph)
-        cursor.insertBlock()
-        cursor.endEditBlock()
-
-    def about(self):
-        QMessageBox.about(self, "About Dock Widgets",
-                "The <b>Dock Widgets</b> example demonstrates how to use "
-                "Qt's dock widgets. You can enter your own text, click a "
-                "customer to add a customer name and address, and click "
-                "standard paragraphs to add them.")
 
     def createActions(self):
         self.newLetterAct = QAction(QIcon.fromTheme('document-new', QIcon(':/images/new.png')), "&New Letter",
                 self, shortcut=QKeySequence.New,
                 statusTip="Create a new form letter", triggered=self.newLetter)
-
-        self.saveAct = QAction(QIcon.fromTheme('document-save', QIcon(':/images/save.png')), "&Save...", self,
-                shortcut=QKeySequence.Save,
-                statusTip="Save the current form letter", triggered=self.save)
-
-        self.printAct = QAction(QIcon.fromTheme('document-print', QIcon(':/images/print.png')), "&Print...", self,
-                shortcut=QKeySequence.Print,
-                statusTip="Print the current form letter",
-                triggered=self.print_)
-
-#        self.DefaultAct = QAction(QIcon.fromTheme('document-default', QIcon(':/images/def.png')), "&Start for Default", self,
-#                shortcut=QKeySequence.Print,
+#        self.DefaultAct = QAction(QIcon.fromTheme('document-default', QIcon(':/images/def.png')), "&Start for Default",
+#                self, shortcut=QKeySequence.New,
 #                statusTip="Starts program for default location (Wrocław)",
 #                triggered=self.dlocation)
-
-        self.undoAct = QAction(QIcon.fromTheme('edit-undo', QIcon(':/images/undo.png')), "&Undo", self,
-                shortcut=QKeySequence.Undo,
-                statusTip="Undo the last editing action", triggered=self.undo)
-
-        self.quitAct = QAction("&Quit", self, shortcut="Ctrl+Q",
-                statusTip="Quit the application", triggered=self.close)
-
-        self.aboutAct = QAction("&About", self,
-                statusTip="Show the application's About box",
-                triggered=self.about)
-
-        self.aboutQtAct = QAction("About &Qt", self,
-                statusTip="Show the Qt library's About box",
-                triggered=QApplication.instance().aboutQt)
-
-    def createMenus(self):
-        self.fileMenu = self.menuBar().addMenu("&File")
-        self.fileMenu.addAction(self.newLetterAct)
-        self.fileMenu.addAction(self.saveAct)
-        self.fileMenu.addAction(self.printAct)
-#        self.fileMenu.addAction(self.DefaultAct)
-        self.fileMenu.addSeparator()
-        self.fileMenu.addAction(self.quitAct)
-
-        self.editMenu = self.menuBar().addMenu("&Edit")
-        self.editMenu.addAction(self.undoAct)
-
-        self.viewMenu = self.menuBar().addMenu("&View")
-
-        self.menuBar().addSeparator()
-
-        self.helpMenu = self.menuBar().addMenu("&Help")
-        self.helpMenu.addAction(self.aboutAct)
-        self.helpMenu.addAction(self.aboutQtAct)
 
     def createToolBars(self):
         self.fileToolBar = self.addToolBar("File")
         self.fileToolBar.addAction(self.newLetterAct)
-        self.fileToolBar.addAction(self.saveAct)
-        self.fileToolBar.addAction(self.printAct)
 
-        self.editToolBar = self.addToolBar("Edit")
-        self.editToolBar.addAction(self.undoAct)
+
+    def createMenus(self):
+        self.fileMenu = self.menuBar().addMenu("&File")
+        self.fileMenu.addAction(self.newLetterAct)
+#        self.fileMenu.addAction(self.DefaultAct)
+        self.fileMenu.addSeparator()
+        self.editMenu = self.menuBar().addMenu("&Edit")
+        self.viewMenu = self.menuBar().addMenu("&View")
+        self.menuBar().addSeparator()
+        self.helpMenu = self.menuBar().addMenu("&Help")
 
     def createStatusBar(self):
         self.statusBar().showMessage("Ready")
 
     def createDockWindows(self):
-        dock = QDockWidget("Customers", self)
-        dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        self.customerList = QListWidget(dock)
-        self.customerList.addItems((
-            "John Doe, Harmony Enterprises, 12 Lakeside, Ambleton",
-            "Jane Doe, Memorabilia, 23 Watersedge, Beaton",
-            "Tammy Shea, Tiblanka, 38 Sea Views, Carlton",
-            "Tim Sheen, Caraba Gifts, 48 Ocean Way, Deal",
-            "Sol Harvey, Chicos Coffee, 53 New Springs, Eccleston",
-            "Sally Hobart, Tiroli Tea, 67 Long River, Fedula"))
+        dock = QDockWidget("Program", self)
+        dock.setFeatures(dock.NoDockWidgetFeatures)
+        dock.DockWidgetMovable = False
+        dock.setAllowedAreas(Qt.LeftDockWidgetArea )
+        self.multiWidget = QWidget()
+        font1 = QFont("Courier New", 10)
+        self.title = QLabel("SOLAR PANEL Program")
+        font2 = QFont("Courier New", 10)
+        font2.setBold(True)
+        self.author = QLabel("Tomasz Dróżdż")
+        self.author.setFont(font2)
+        self.other = QLabel("Politechnika Wrocławska")
+        self.other2 = QLabel("Automatyka i Robotyka")
+        self.vLayout = QVBoxLayout()
+        self.vLayout.addWidget(self.title)
+        self.vLayout.addWidget(self.author)
+        self.vLayout.addWidget(self.other)
+        self.vLayout.addWidget(self.other2)
+        self.multiWidget.setLayout(self.vLayout);
+        dock.setWidget(self.multiWidget);
+        self.addDockWidget(Qt.LeftDockWidgetArea, dock)
+
+        dock = QDockWidget("Zegar", self)
+        dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
+        self.customerList = QLabel(dock)
+        self.customerList.setText((
+            "John Doe, Harmony Enterprises, 12 Lakeside, Ambleton"))
         dock.setWidget(self.customerList)
-        self.addDockWidget(Qt.RightDockWidgetArea, dock)
-        self.viewMenu.addAction(dock.toggleViewAction())
+        self.addDockWidget(Qt.LeftDockWidgetArea, dock)
 
-        dock = QDockWidget("Współrzędne dla domyślnej lokacji", self)
+#        dock = QDockWidget("Współrzędne dla domyślnej lokacji", self)
+#        dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+#        self.multiWidget2 = QWidget()
+#        self.vLayout2 = QVBoxLayout()
+#        self.result = QLabel(self.latlong)
+#        self.latitude = QTextEdit()
+#        self.latitude.setFixedHeight(24)
+#        self.longitude = QTextEdit()
+#        self.longitude.setFixedHeight(24)
+#        self.button = QPushButton('Test', self)
+#        self.button.clicked.connect(self.handleButton)
+#        self.vLayout2.addWidget(self.latitude)
+#        self.vLayout2.addWidget(self.longitude)
+#        self.vLayout2.addWidget(self.button)
+#        self.vLayout2.addWidget(self.result)
+#        self.multiWidget2.setLayout(self.vLayout2);
+#        dock.setWidget(self.multiWidget2);
+#        self.addDockWidget(Qt.RightDockWidgetArea, dock)
+
+#    def handleButton(self):
+#        self.result.setText(self.latitude.toPlainText()+self.longitude.toPlainText())
+
+        dock = QDockWidget("Współrzędne", self)
+        s = ephem.Sun()
+        s.compute(epoch=ephem.now())
         dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        self.customerList = QListWidget(dock)
-        self.customerList.addItems((
-            "John Doe, Harmony Enterprises, 12 Lakeside, Ambleton",
-            "Jane Doe, Memorabilia, 23 Watersedge, Beaton",
-            "Tammy Shea, Tiblanka, 38 Sea Views, Carlton",
-            "Tim Sheen, Caraba Gifts, 48 Ocean Way, Deal",
-            "Sol Harvey, Chicos Coffee, 53 New Springs, Eccleston",
-            "Sally Hobart, Tiroli Tea, 67 Long River, Fedula"))
-        dock.setWidget(self.customerList)
+        self.multiWidget3 = QWidget()
+        self.vLayout3 = QGridLayout()
+        self.result = QLabel(self.latlong)
+        self.latitude = QLabel('Latitude')
+        self.longitude = QLabel('longitude')
+        self.result = QLabel('Result')
+        self.rightascension = QLabel('R.A.')
+        self.latitudeEdit = QTextEdit()
+        self.longitudeEdit = QTextEdit()
+        self.resultEdit = QTextEdit()
+#        self.latitude = QTextEdit()
+#        self.latitude.setFixedHeight(24)
+#        self.longitude = QTextEdit()
+#        self.longitude.setFixedHeight(24)
+        self.button = QPushButton('Test', self)
+        self.button.clicked.connect(self.handleButton3)
+        self.vLayout3.addWidget(self.latitude)
+        self.vLayout3.addWidget(self.latitudeEdit)
+        self.vLayout3.addWidget(self.longitude)
+        self.vLayout3.addWidget(self.longitudeEdit)
+        self.vLayout3.addWidget(self.rightascension)
+        self.vLayout3.addWidget(self.button)
+        self.vLayout3.addWidget(self.result)
+#        self.vLayout3.addWidget(self.resultEdit)
+        self.multiWidget3.setLayout(self.vLayout3);
+        dock.setWidget(self.multiWidget3);
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
-        self.viewMenu.addAction(dock.toggleViewAction())
 
-        dock = QDockWidget("Paragraphs", self)
-        self.paragraphsList = QListWidget(dock)
-        self.paragraphsList.addItems((
-            "Thank you for your payment which we have received today.",
-            "Your order has been dispatched and should be with you within "
-                "28 days.",
-            "We have dispatched those items that were in stock. The rest of "
-                "your order will be dispatched once all the remaining items "
-                "have arrived at our warehouse. No additional shipping "
-                "charges will be made.",
-            "You made a small overpayment (less than $5) which we will keep "
-                "on account for you, or return at your request.",
-            "You made a small underpayment (less than $1), but we have sent "
-                "your order anyway. We'll add this underpayment to your next "
-                "bill.",
-            "Unfortunately you did not send enough money. Please remit an "
-                "additional $. Your order will be dispatched as soon as the "
-                "complete amount has been received.",
-            "You made an overpayment (more than $5). Do you wish to buy more "
-                "items, or should we return the excess to you?"))
-        dock.setWidget(self.paragraphsList)
-        self.addDockWidget(Qt.RightDockWidgetArea, dock)
-        self.viewMenu.addAction(dock.toggleViewAction())
 
-        self.customerList.currentTextChanged.connect(self.insertCustomer)
-        self.paragraphsList.currentTextChanged.connect(self.addParagraph)
+    def handleButton2(self):
+        self.result.setText(self.latitudeEdit.toPlainText()+self.longitudeEdit.toPlainText())
+
+
+    def handleButton3(self):
+#        s = ephem.Sun()
+#        s.compute(epoch=ephem.now())
+#        print("R.A.: %s DEC.: %s" % (s.a_ra, s.a_dec))
+        self.result.setText(s.ra)
+
 
 
 if __name__ == '__main__':
