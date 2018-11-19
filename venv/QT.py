@@ -172,26 +172,29 @@ class MainWindow(QMainWindow):
         tableFormat.setCellPadding(16)
         tableFormat.setAlignment(Qt.AlignRight)
         cursor.insertTable(1, 1, tableFormat)
-        cursor.insertText("Tomasz Dróżdż", boldFormat)
+        cursor.insertText("Domyślne Współrzędne: ", boldFormat)
         cursor.insertBlock()
-        cursor.insertText("Politechnika Wrocławska", textFormat)
         cursor.insertBlock()
-        cursor.insertText("Automatyka i Robotyka")
+        cursor.insertText("Szerokość: 51° 06' 00''", textFormat)
         cursor.insertBlock()
-        cursor.insertText("SOLAR PANEL Program")
+        cursor.insertBlock()
+        cursor.insertText("Długość: 17° 01' 00''")
+        cursor.insertBlock()
+        cursor.insertBlock()
+        cursor.insertText("(Współrzędne geograficzne Wrocławia)")
         cursor.setPosition(topFrame.lastPosition())
-        cursor.insertText(QDate.currentDate().toString("Dziś jest: d MMMM yyyy:"),
-                textFormat)
-        cursor.insertText(QTime.currentTime().toString("  hh:mm:ss"), textFormat)
-#        cursor.insertText(QTimer.timer("  hh:mm:ss", 1000), textFormat)
-        cursor.insertBlock()
-        cursor.insertBlock()
-        cursor.insertText("Wrocław: ", textFormat)
-        cursor.insertText("17.03 deg; 51.10 deg", textFormat)
-        cursor.insertText(",", textFormat)
-        for i in range(3):
-            cursor.insertBlock()
-        cursor.insertText("Text", textFormat)
+#         cursor.insertText(QDate.currentDate().toString("Dziś jest: d MMMM yyyy:"),
+#                 textFormat)
+#         cursor.insertText(QTime.currentTime().toString("  hh:mm:ss"), textFormat)
+# #        cursor.insertText(QTimer.timer("  hh:mm:ss", 1000), textFormat)
+#         cursor.insertBlock()
+#         cursor.insertBlock()
+#         cursor.insertText("Wrocław: ", textFormat)
+#         cursor.insertText("17.03 deg; 51.10 deg", textFormat)
+#         cursor.insertText(",", textFormat)
+#         for i in range(3):
+#             cursor.insertBlock()
+#         cursor.insertText("Text", textFormat)
 
     def dLocation(self):
         self.s = ephem.Sun()
@@ -201,7 +204,7 @@ class MainWindow(QMainWindow):
         hour_angle = self.o.sidereal_time() - self.s.ra
         t = ephem.hours(hour_angle + ephem.hours('12:00')).norm  # .norm for 0..24
         self.rad = str(ephem.hours(hour_angle + ephem.hours('12:00')).norm)
-        self.result.setText("R.A.: " + str(self.s.a_ra) + "             DEC.: " + str(self.s.a_dec))
+        self.result.setText("R.A.: " + str(self.s.a_ra) + "               DEC.: " + str(self.s.a_dec))
         self.result2.setText("HOUR ANGLE: " + str(self.rad) + " SIDERAL TIME: " + str(self.o.sidereal_time()))
 
     def update(self):
@@ -223,17 +226,17 @@ class MainWindow(QMainWindow):
 
 
     def createMenus(self):
-        self.fileMenu = self.menuBar().addMenu("&File")
+        self.fileMenu = self.menuBar().addMenu("&Plik")
         self.fileMenu.addAction(self.newLetterAct)
 #        self.fileMenu.addAction(self.DefaultAct)
         self.fileMenu.addSeparator()
-        self.editMenu = self.menuBar().addMenu("&Edit")
-        self.viewMenu = self.menuBar().addMenu("&View")
+        self.editMenu = self.menuBar().addMenu("&Edycja")
+        self.viewMenu = self.menuBar().addMenu("&Widok")
         self.menuBar().addSeparator()
-        self.helpMenu = self.menuBar().addMenu("&Help")
+        self.helpMenu = self.menuBar().addMenu("&Pomoc")
 
     def createStatusBar(self):
-        self.statusBar().showMessage("Ready")
+        self.statusBar().showMessage("Gotowy")
 
     def createDockWindows(self):
         dock = QDockWidget("Program", self)
@@ -305,7 +308,7 @@ class MainWindow(QMainWindow):
 #    def handleButton(self):
 #        self.result.setText(self.latitude.toPlainText()+self.longitude.toPlainText())
 
-        dock = QDockWidget("Współrzędne", self)
+        dock = QDockWidget("Współrzędne Geograficzne Panelu: ", self)
         s = ephem.Sun()
         s.compute(epoch=ephem.now())
         dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
@@ -316,7 +319,7 @@ class MainWindow(QMainWindow):
         self.longitude = QLabel('Longitude')
         self.result = QLabel('')
         self.result2 = QLabel('')
-        self.rightascension = QLabel('R.A.')
+        self.rightascension = QLabel('SOLAR PANEL COORDINATES: ')
         self.latitudeEdit = QLineEdit()
         self.latitudeEdit.setFixedHeight(24)
         self.latitudeEdit.setFixedWidth(260)
@@ -327,7 +330,7 @@ class MainWindow(QMainWindow):
 #        self.latitude.setFixedHeight(24)
 #        self.longitude = QTextEdit()
 #        self.longitude.setFixedHeight(24)
-        self.button = QPushButton('Test', self)
+        self.button = QPushButton('Wylicz współrzędne', self)
         self.button.clicked.connect(self.handleButton3)
         self.vLayout3.addWidget(self.latitude)
         self.vLayout3.addWidget(self.latitudeEdit)
