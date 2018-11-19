@@ -206,8 +206,7 @@ class MainWindow(QMainWindow):
 
     def update(self):
         time = QTime.currentTime()
-        self.customerList.setText(QTime.currentTime().toString("hh:mm:ss"))
-
+        self.clock.setText(QTime.currentTime().toString("hh:mm:ss"))
 
     def createActions(self):
         self.newLetterAct = QAction(QIcon.fromTheme('document-new', QIcon(':/images/new.png')), "&New Letter",
@@ -261,13 +260,27 @@ class MainWindow(QMainWindow):
 
         dock = QDockWidget("Zegar", self)
         dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
-        self.customerList = QLabel(dock)
-        self.customerList = QLabel('')
-        
+        self.multiWidget2 = QWidget()
+        font3 = QFont("Arial", 11)
+        font4 = QFont("Arial", 11)
+        self.date = QLabel(QDate.currentDate().toString("d MMMM yyyy:  "))
+        self.clock = QLabel(QTime.currentTime().toString("hh:mm:ss"))
+        self.date.setFont(font3)
+        self.clock.setFont(font4)
+        font4.setBold(True)
+        self.vLayout2 = QVBoxLayout()
+        self.vLayout2.addWidget(self.date)
+        self.vLayout2.addWidget(self.clock)
+        self.multiWidget2.setLayout(self.vLayout2)
+        dock.setWidget(self.multiWidget2)
+        # self.customerList = QLabel(dock)
+        # self.date = QLabel(dock)
+
+
         # self.customerList.setText(QTime.currentTime().toString("hh:mm:ss"))
         # self.customerList.setText((
         #     "John Doe, Harmony Enterprises, 12 Lakeside, Ambleton"))
-        dock.setWidget(self.customerList)
+        # dock.setWidget(self.customerList)
         self.addDockWidget(Qt.LeftDockWidgetArea, dock)
 
 #        dock = QDockWidget("Współrzędne dla domyślnej lokacji", self)
