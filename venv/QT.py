@@ -54,6 +54,42 @@ from PySide2.QtWidgets import (QAction, QApplication, QDialog, QDockWidget,
 import datetime
 import ephem
 
+#class logika:
+
+#        self.s = ephem.Sun()
+#        self.o = ephem.Observer()
+#        self.o.date = ephem.now()
+#        hour_angle = 0
+
+#    def __init__(self, lon, lat):
+#        self.s.compute(self.o)
+#        hour_angle = self.o.sidereal_time() - self.s.ra
+
+#    def setLon(self, lon):
+#        self.o.lon = lon
+#        self.refresh()
+
+#    def setLon(self, lat):
+#        self.o.lat = lat
+#        self.refresh()
+
+#    def getRad(self):
+#        return str(ephem.hours(hour_angle + ephem.hours('12:00')).norm)
+
+#    def getDec(self):
+#        return str(self.s.a_dec)
+
+#    def getRa(self):
+#        return str(self.s.a_ra)
+
+#    def getTime(self):
+#        return str(self.o.sidereal_time()
+
+#    def refresh(self):
+#        self.o.date = ephem.now()
+#        self.s.compute(self.o)
+#        hour_angle = self.o.sidereal_time() - self.s.ra
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -74,6 +110,9 @@ class MainWindow(QMainWindow):
         self.timer = QTimer()
         self.timer.timeout.connect(self.dLocation)
         self.timerIsUp = False
+        self.timer2 = QTimer()
+        self.timer2.timeout.connect(self.update)
+        self.timer2.start(1000)
         self.newLetter()
         self.s = ephem.Sun()
         self.o = ephem.Observer()
@@ -162,8 +201,12 @@ class MainWindow(QMainWindow):
         hour_angle = self.o.sidereal_time() - self.s.ra
         t = ephem.hours(hour_angle + ephem.hours('12:00')).norm  # .norm for 0..24
         self.rad = str(ephem.hours(hour_angle + ephem.hours('12:00')).norm)
-        self.result.setText("R.A.: " + str(self.s.a_ra) + " DEC.: " + str(self.s.a_dec))
+        self.result.setText("R.A.: " + str(self.s.a_ra) + "             DEC.: " + str(self.s.a_dec))
         self.result2.setText("HOUR ANGLE: " + str(self.rad) + " SIDERAL TIME: " + str(self.o.sidereal_time()))
+
+    def update(self):
+        time = QTime.currentTime()
+        self.customerList.setText(QTime.currentTime().toString("hh:mm:ss"))
 
 
     def createActions(self):
@@ -219,8 +262,11 @@ class MainWindow(QMainWindow):
         dock = QDockWidget("Zegar", self)
         dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
         self.customerList = QLabel(dock)
-        self.customerList.setText((
-            "John Doe, Harmony Enterprises, 12 Lakeside, Ambleton"))
+        self.customerList = QLabel('')
+        
+        # self.customerList.setText(QTime.currentTime().toString("hh:mm:ss"))
+        # self.customerList.setText((
+        #     "John Doe, Harmony Enterprises, 12 Lakeside, Ambleton"))
         dock.setWidget(self.customerList)
         self.addDockWidget(Qt.LeftDockWidgetArea, dock)
 
@@ -260,8 +306,10 @@ class MainWindow(QMainWindow):
         self.rightascension = QLabel('R.A.')
         self.latitudeEdit = QLineEdit()
         self.latitudeEdit.setFixedHeight(24)
+        self.latitudeEdit.setFixedWidth(260)
         self.longitudeEdit = QLineEdit()
         self.longitudeEdit.setFixedHeight(24)
+        self.longitudeEdit.setFixedWidth(260)
 #        self.latitude = QTextEdit()
 #        self.latitude.setFixedHeight(24)
 #        self.longitude = QTextEdit()
