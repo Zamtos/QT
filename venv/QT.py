@@ -98,7 +98,6 @@ class MainWindow(QMainWindow):
         self.latlong = "0"
         self.textEdit = QTextEdit()
         self.setCentralWidget(self.textEdit)
-
         self.createActions()
         self.createMenus()
         self.createToolBars()
@@ -149,7 +148,51 @@ class MainWindow(QMainWindow):
 #        print("SUN Altitude: %s SUN Azimuth: %s" % (sun.alt, sun.az))
 #        root.after(1000, dLocation)
 
+    # def centralWindow(self):
+    #     dock = QDockWidget("Współrzędne Panelu Słonecznego", self)
+    #     dock.setAllowedAreas(Qt.LeftDockWidgetArea)
+    #     self.multiWidget4 = QWidget()
+    #     self.vLayout4 = QVBoxLayout()
+    #     self.result = QLabel(self.latlong)
+    #     self.latitude = QTextEdit()
+    #     self.latitude.setFixedHeight(24)
+    #     self.longitude = QTextEdit()
+    #     self.longitude.setFixedHeight(24)
+    #     self.button = QPushButton('Test', self)
+    #     self.button.clicked.connect(self.handleButton)
+    #     self.vLayout4.addWidget(self.latitude)
+    #     self.vLayout4.addWidget(self.longitude)
+    #     self.vLayout4.addWidget(self.button)
+    #     self.vLayout4.addWidget(self.result)
+    #     self.multiWidget4.setLayout(self.vLayout4);
+    #     dock.setWidget(self.multiWidget4);
+    #     self.addDockWidget(Qt.LeftDockWidgetArea, dock)
+    #     self.viewMenu.addAction(dock.toggleViewAction())
+
+    def handleButton(self):
+        self.result.setText(self.latitude.toPlainText()+self.longitude.toPlainText())
+
+
     def newLetter(self):
+        # dock = QDockWidget("Współrzędne Panelu Słonecznego", self)
+        # dock.setAllowedAreas(Qt.CentralDockWidgetArea | Qt.RightDockWidgetArea)
+        # self.multiWidget4 = QWidget()
+        # self.vLayout4 = QVBoxLayout()
+        # self.result = QLabel(self.latlong)
+        # self.latitude = QTextEdit()
+        # self.latitude.setFixedHeight(24)
+        # self.longitude = QTextEdit()
+        # self.longitude.setFixedHeight(24)
+        # self.button = QPushButton('Test', self)
+        # self.button.clicked.connect(self.handleButton)
+        # self.vLayout4.addWidget(self.latitude)
+        # self.vLayout4.addWidget(self.longitude)
+        # self.vLayout4.addWidget(self.button)
+        # self.vLayout4.addWidget(self.result)
+        # self.multiWidget4.setLayout(self.vLayout4);
+        # dock.setWidget(self.multiWidget4);
+        # self.addDockWidget(Qt.CentralDockWidgetArea, dock
+
         self.textEdit.clear()
 
         cursor = self.textEdit.textCursor()
@@ -158,9 +201,6 @@ class MainWindow(QMainWindow):
         topFrameFormat = topFrame.frameFormat()
         topFrameFormat.setPadding(16)
         topFrame.setFrameFormat(topFrameFormat)
-#        timer = QTimer(self)
-#        timer.timeout.connect(self.showTime)
-#        timer.start(1000)
         textFormat = QTextCharFormat()
         boldFormat = QTextCharFormat()
         boldFormat.setFontWeight(QFont.Bold)
@@ -216,14 +256,30 @@ class MainWindow(QMainWindow):
         time = QTime.currentTime()
         self.clock.setText(QTime.currentTime().toString("hh:mm:ss"))
 
+    def about(self):
+        QMessageBox.about(self, "O Programie",
+                          "<p align=justify>Program <b><i>''Panel Słoneczny''</b></i> pozwala na wyliczenie współrzędnych Słońca, "
+                          "na podstawie których należy ustawić Panel. Domyślnie program startuje dla "
+                          "szerokości i&nbsp;długości geograficznej Wrocławia z obecną dla użytkownika datą i godziną. "
+                          "Użytkownik może podać swoją szerokość i długość geograficzną oraz swój czas i datę wpisując "
+                          "w odpowiednie pola swoje dane. W polach Szerokość i Długość należy podać w stopniach dziesiętnych "
+                          "W polu ''Data i Czas'' własne dane należy wpisywać zgodnie ze schematem: "
+                          "rok/mies/dzień godz:min:sek (np.: 2019/02/04 14:02:03). Pisanie zer przed godzinami, minutami i sekundami "
+                          "dla liczb poniżej dziesięciu nie jest wymagane (2019/02/04 14:02:03 = 2019/2/4 14:2:3)<p/>")
+
     def createActions(self):
         self.newLetterAct = QAction(QIcon.fromTheme('document-new', QIcon(':/images/new.png')), "&New Letter",
                 self, shortcut=QKeySequence.New,
                 statusTip="Create a new form letter", triggered=self.newLetter)
-#        self.DefaultAct = QAction(QIcon.fromTheme('document-default', QIcon(':/images/def.png')), "&Start for Default",
-#                self, shortcut=QKeySequence.New,
-#                statusTip="Starts program for default location (Wrocław)",
-#                triggered=self.dlocation)
+        self.aboutAct = QAction("&O Programie", self,
+                                statusTip="Pokazuje pomoc dla programu",
+                                triggered=self.about)
+        self.quitAct = QAction("&Zamknij", self, shortcut="Ctrl+Q",
+                               statusTip="Zamyka aplikację", triggered=self.close)
+        self.DefaultAct = QAction(QIcon.fromTheme('document-default', QIcon(':/images/def.png')), "&Rozpocznij dla domyślnej lokacji",
+               self,
+               statusTip="Rozpoczyna obliczenia dla domyślnej lokacji (Wrocław)",
+               triggered=self.handleButton2)
 
     def createToolBars(self):
         self.fileToolBar = self.addToolBar("File")
@@ -233,12 +289,15 @@ class MainWindow(QMainWindow):
     def createMenus(self):
         self.fileMenu = self.menuBar().addMenu("&Plik")
         self.fileMenu.addAction(self.newLetterAct)
-#        self.fileMenu.addAction(self.DefaultAct)
+        self.fileMenu.addAction(self.DefaultAct)
+        self.fileMenu.addSeparator()
+        self.fileMenu.addAction(self.quitAct)
         self.fileMenu.addSeparator()
         self.editMenu = self.menuBar().addMenu("&Edycja")
         self.viewMenu = self.menuBar().addMenu("&Widok")
         self.menuBar().addSeparator()
         self.helpMenu = self.menuBar().addMenu("&Pomoc")
+        self.helpMenu.addAction(self.aboutAct)
 
     def createStatusBar(self):
         self.statusBar().showMessage("Gotowy")
@@ -269,8 +328,8 @@ class MainWindow(QMainWindow):
         dock = QDockWidget("Zegar", self)
         dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
         self.multiWidget2 = QWidget()
-        font3 = QFont("Arial", 11)
-        font4 = QFont("Arial", 11)
+        font3 = QFont("Arial", 13)
+        font4 = QFont("Arial", 20)
         self.date = QLabel(QDate.currentDate().toString("d MMMM yyyy:  "))
         self.clock = QLabel(QTime.currentTime().toString("hh:mm:ss"))
         self.date.setFont(font3)
@@ -281,37 +340,32 @@ class MainWindow(QMainWindow):
         self.vLayout2.addWidget(self.clock)
         self.multiWidget2.setLayout(self.vLayout2)
         dock.setWidget(self.multiWidget2)
-        # self.customerList = QLabel(dock)
-        # self.date = QLabel(dock)
-
-
-        # self.customerList.setText(QTime.currentTime().toString("hh:mm:ss"))
-        # self.customerList.setText((
-        #     "John Doe, Harmony Enterprises, 12 Lakeside, Ambleton"))
-        # dock.setWidget(self.customerList)
         self.addDockWidget(Qt.LeftDockWidgetArea, dock)
+        self.viewMenu.addAction(dock.toggleViewAction())
 
-#        dock = QDockWidget("Współrzędne dla domyślnej lokacji", self)
-#        dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-#        self.multiWidget2 = QWidget()
-#        self.vLayout2 = QVBoxLayout()
-#        self.result = QLabel(self.latlong)
-#        self.latitude = QTextEdit()
-#        self.latitude.setFixedHeight(24)
-#        self.longitude = QTextEdit()
-#        self.longitude.setFixedHeight(24)
-#        self.button = QPushButton('Test', self)
-#        self.button.clicked.connect(self.handleButton)
-#        self.vLayout2.addWidget(self.latitude)
-#        self.vLayout2.addWidget(self.longitude)
-#        self.vLayout2.addWidget(self.button)
-#        self.vLayout2.addWidget(self.result)
-#        self.multiWidget2.setLayout(self.vLayout2);
-#        dock.setWidget(self.multiWidget2);
-#        self.addDockWidget(Qt.RightDockWidgetArea, dock)
 
-#    def handleButton(self):
-#        self.result.setText(self.latitude.toPlainText()+self.longitude.toPlainText())
+    #     dock = QDockWidget("Współrzędne Panelu Słonecznego", self)
+    #     dock.setAllowedAreas(Qt.LeftDockWidgetArea)
+    #     self.multiWidget4 = QWidget()
+    #     self.vLayout4 = QVBoxLayout()
+    #     self.result = QLabel(self.latlong)
+    #     self.latitude = QTextEdit()
+    #     self.latitude.setFixedHeight(24)
+    #     self.longitude = QTextEdit()
+    #     self.longitude.setFixedHeight(24)
+    #     self.button = QPushButton('Test', self)
+    #     self.button.clicked.connect(self.handleButton)
+    #     self.vLayout4.addWidget(self.latitude)
+    #     self.vLayout4.addWidget(self.longitude)
+    #     self.vLayout4.addWidget(self.button)
+    #     self.vLayout4.addWidget(self.result)
+    #     self.multiWidget4.setLayout(self.vLayout4);
+    #     dock.setWidget(self.multiWidget4);
+    #     self.addDockWidget(Qt.LeftDockWidgetArea, dock)
+    #     self.viewMenu.addAction(dock.toggleViewAction())
+    #
+    # def handleButton(self):
+    #     self.result.setText(self.latitude.toPlainText()+self.longitude.toPlainText())
 
         dock = QDockWidget("Współrzędne Geograficzne Panelu: ", self)
         s = ephem.Sun()
@@ -323,28 +377,29 @@ class MainWindow(QMainWindow):
         font6 = QFont("Arial", 10)
         self.vLayout3 = QGridLayout()
         self.result = QLabel(self.latlong)
-        self.latitude = QLabel('Latitude')
-        self.longitude = QLabel('Longitude')
-        self.dateandtime = QLabel('Date and Time: YYYY/MM/D hh:mm:ss (np.: 2017/12/4 05:22:07)')
+        self.latitude = QLabel('Szerokość')
+        self.longitude = QLabel('Długość')
+        self.dateandtime = QLabel('Data i Czas')
         self.result = QLabel('')
         self.result2 = QLabel('')
         self.result3 = QLabel('')
-        self.solarpanelcor = QLabel('SOLAR PANEL COORDINATES: ')
+        self.solarpanelcor = QLabel('WSPÓŁRZĘDNE PANELU SŁONECZNEGO: ')
         self.latitudeEdit = QLineEdit()
         self.latitudeEdit.setFixedHeight(24)
         self.latitudeEdit.setFixedWidth(329)
+        self.latitudeEdit.setStatusTip("Wprowadzona szerokość powinna być w stopniach dziesiętnych (np.: 51.100000)")
         self.longitudeEdit = QLineEdit()
         self.longitudeEdit.setFixedHeight(24)
         self.longitudeEdit.setFixedWidth(329)
+        self.longitudeEdit.setStatusTip("Wprowadzona długość powinna być w stopniach dziesiętnych (np.: 17.03333)")
         self.dateandtimeEdit = QLineEdit()
         self.dateandtimeEdit.setFixedHeight(24)
         self.dateandtimeEdit.setFixedWidth(329)
-#        self.latitude = QTextEdit()
-#        self.latitude.setFixedHeight(24)
-#        self.longitude = QTextEdit()
-#        self.longitude.setFixedHeight(24)
+        self.dateandtimeEdit.setStatusTip("Wprowadzona data powinna być w formacie: rok/mies/dzień<spacja>godz:min:sek (np.: 2022/12/4 8:12:7)")
         self.button = QPushButton('Wylicz współrzędne / Przerwij liczenie', self)
         self.button.clicked.connect(self.handleButton3)
+        self.button.setStatusTip("Rozpoczyna Obliczenia")
+        # self.button.addAction(self.buttonAct)
         self.solarpanelcor.setFont(font5)
         self.result.setFont(font6)
         self.result2.setFont(font6)
@@ -364,13 +419,23 @@ class MainWindow(QMainWindow):
         self.multiWidget3.setLayout(self.vLayout3);
         dock.setWidget(self.multiWidget3);
         self.addDockWidget(Qt.RightDockWidgetArea, dock)
+        self.viewMenu.addAction(dock.toggleViewAction())
 
 
     def handleButton2(self):
-        self.result.setText(self.latitudeEdit.toPlainText()+self.longitudeEdit.toPlainText())
+        self.button.setStatusTip("Przerywa liczenie")
+        if self.timerIsUp == False:
+            self.o.lon, self.o.lat = '17.03333', '51.100000'  # Współrzędne Wrocławia
+            self.timer.start(1000)
+            self.timerIsUp = True
+        else:
+            self.timer.stop()
+            self.timerIsUp = False
+            self.button.setStatusTip("Rozpoczyna Obliczenia")
 
 
     def handleButton3(self):
+        self.button.setStatusTip("Przerywa liczenie")
         if self.timerIsUp == False:
             #zastąpic wlasna logika
             if self.latitudeEdit.text() and self.longitudeEdit.text():
@@ -383,6 +448,7 @@ class MainWindow(QMainWindow):
         else:
             self.timer.stop()
             self.timerIsUp = False
+            self.button.setStatusTip("Rozpoczyna Obliczenia")
 #        s = ephem.Sun()
 #        s.compute(epoch=ephem.now())
 #        print("R.A.: %s DEC.: %s" % (s.a_ra, s.a_dec))
