@@ -199,14 +199,17 @@ class MainWindow(QMainWindow):
     def dLocation(self):
         self.s = ephem.Sun()
         self.s.compute(epoch=ephem.now())
-        self.o.date = ephem.now()  # 00:22:07 EDT 06:22:07 UT+1
+        if self.dateandtimeEdit.text():
+            self.o.date = self.dateandtimeEdit.text()
+        else:
+            self.o.date = ephem.now()  # 00:22:07 EDT 06:22:07 UT+1
         self.s.compute(self.o)
         hour_angle = self.o.sidereal_time() - self.s.ra
         t = ephem.hours(hour_angle + ephem.hours('12:00')).norm  # .norm for 0..24
         self.rad = str(ephem.hours(hour_angle + ephem.hours('12:00')).norm)
         self.result.setText("R.A.: " + str(self.s.a_ra) + "                DEC.: " + str(self.s.a_dec))
         self.result2.setText("HOUR ANGLE: " + str(self.rad) + " SIDERAL TIME: " + str(self.o.sidereal_time()))
-        self.result3.setText("SUN Altitude: " + str(self.s.alt) + "     SUN Azimuth: " + str(self.s.az))
+        self.result3.setText("SUN Altitude: " + str(self.s.alt) + "       SUN Azimuth: " + str(self.s.az))
 
 
     def update(self):
@@ -322,6 +325,7 @@ class MainWindow(QMainWindow):
         self.result = QLabel(self.latlong)
         self.latitude = QLabel('Latitude')
         self.longitude = QLabel('Longitude')
+        self.dateandtime = QLabel('Date and Time: YYYY/MM/D hh:mm:ss (np.: 2017/12/4 05:22:07)')
         self.result = QLabel('')
         self.result2 = QLabel('')
         self.result3 = QLabel('')
@@ -332,6 +336,9 @@ class MainWindow(QMainWindow):
         self.longitudeEdit = QLineEdit()
         self.longitudeEdit.setFixedHeight(24)
         self.longitudeEdit.setFixedWidth(329)
+        self.dateandtimeEdit = QLineEdit()
+        self.dateandtimeEdit.setFixedHeight(24)
+        self.dateandtimeEdit.setFixedWidth(329)
 #        self.latitude = QTextEdit()
 #        self.latitude.setFixedHeight(24)
 #        self.longitude = QTextEdit()
@@ -346,6 +353,8 @@ class MainWindow(QMainWindow):
         self.vLayout3.addWidget(self.latitudeEdit)
         self.vLayout3.addWidget(self.longitude)
         self.vLayout3.addWidget(self.longitudeEdit)
+        self.vLayout3.addWidget(self.dateandtime)
+        self.vLayout3.addWidget(self.dateandtimeEdit)
         self.vLayout3.addWidget(self.button)
         self.vLayout3.addWidget(self.solarpanelcor)
         self.vLayout3.addWidget(self.result)
