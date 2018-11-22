@@ -111,6 +111,8 @@ class MainWindow(QMainWindow):
         self.solarpanelcordinates.setFont(font0)
         # self.solarpanelcordinates.setFrameStyle(QFrame.Box | QFrame.Sunken)
         # self.solarpanelcordinates.setMidLineWidth(6)
+        #self.text1.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.text1.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         self.text1.setFont(font01)
         self.text1.setFrameStyle(QFrame.Box | QFrame.Raised)
         self.text1.setMidLineWidth(6)
@@ -152,7 +154,7 @@ class MainWindow(QMainWindow):
         self.timer2 = QTimer()
         self.timer2.timeout.connect(self.update)
         self.timer2.start(1000)
-        self.newLetter()
+        #self.newLetter()
         self.s = ephem.Sun()
         self.o = ephem.Observer()
 
@@ -205,7 +207,7 @@ class MainWindow(QMainWindow):
         tableFormat.setCellPadding(16)
         tableFormat.setAlignment(Qt.AlignRight)
         cursor.insertTable(1, 1, tableFormat)
-        cursor.insertText("Domyślne Współrzędne: ", boldFormat)
+        cursor.insertText("Domyślne Zupa Współrzędne: ", boldFormat)
         cursor.insertBlock()
         cursor.insertBlock()
         cursor.insertText("Szerokość: 51° 06' 00''", textFormat)
@@ -232,10 +234,23 @@ class MainWindow(QMainWindow):
     def dLocation(self):
         self.s = ephem.Sun()
         self.s.compute(epoch=ephem.now())
-        if self.dateandtimeEdit.text():
-            self.o.date = self.dateandtimeEdit.text()
+        if self.nameEdit.text():
+            self.text1.setText(self.nameEdit.text())
+            font03 = QFont("Arial", 16)
+            font03.setBold(True)
+            self.text1.setFont(font03)
+            if not self.dateandtimeEdit.text():
+                self.o.date = ephem.now()  # 00:22:07 EDT 06:22:07 UT+1
         else:
-            self.o.date = ephem.now()  # 00:22:07 EDT 06:22:07 UT+1
+            if self.dateandtimeEdit.text():
+                self.o.date = self.dateandtimeEdit.text()
+                self.text1.setText("<b>Obliczenia dla:</b><br/> " + self.dateandtimeEdit.text())
+                font03 = QFont("Arial", 16)
+                font03.setBold(True)
+                self.text1.setFont(font03)
+            else:
+                self.o.date = ephem.now()  # 00:22:07 EDT 06:22:07 UT+1
+        #self.o.date = ephem.now()  # 00:22:07 EDT 06:22:07 UT+1
         self.s.compute(self.o)
         hour_angle = self.o.sidereal_time() - self.s.ra
         t = ephem.hours(hour_angle + ephem.hours('12:00')).norm  # .norm for 0..24
@@ -292,6 +307,9 @@ class MainWindow(QMainWindow):
         # self.newLetterAct = QAction(QIcon.fromTheme('document-new', QIcon(':/images/new.png')), "&New Letter",
         #         self, shortcut=QKeySequence.New,
         #         statusTip="Create a new form letter", triggered=self.newLetter())
+        self.saveAct = QAction(QIcon.fromTheme('document-save', QIcon(':/images/save.png')), "&Zapisz", self,
+                               shortcut=QKeySequence.Save,
+                               statusTip="Zapisz obecne współrzędne", triggered=self.save)
         self.aboutAct = QAction("&O Programie", self,
                                 statusTip="Pokazuje pomoc dla programu",
                                 triggered=self.about)
@@ -312,7 +330,7 @@ class MainWindow(QMainWindow):
 
     def createMenus(self):
         self.fileMenu = self.menuBar().addMenu("&Plik")
-        # self.fileMenu.addAction(self.newLetterAct)
+        self.fileMenu.addAction(self.saveAct)
         self.fileMenu.addAction(self.DefaultAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.quitAct)
@@ -325,7 +343,37 @@ class MainWindow(QMainWindow):
         self.helpMenu.addAction(self.aboutAct2)
 
     def createStatusBar(self):
-        self.statusBar().showMessage("Gotowy")
+        self.statusBar().showMessage("Gotowy", 3000)
+
+    def saveing(self):
+        cursor = self.textEdit.textCursor()
+        self.nameEdit.text()
+        cursor.insertBlock()
+        self.latitudeEdit.text()
+        cursor.insertBlock()
+        self.longitudeEdit.text()
+        cursor.insertBlock()
+        self.dateandtimeEdit.text()
+
+    def save(self):
+        filename, _ = QFileDialog.getSaveFileName(self,
+                                                  "Zapisywanie jako", '.', "Dokumenty textowe(*.txt)")
+        if not filename:
+            return
+
+        file = QFile(filename)
+        if not file.open(QFile.WriteOnly | QFile.Text):
+            QMessageBox.warning(self, "Panel Słoneczny",
+                                "Cannot write file %s:\n%s." % (filename, file.errorString()))
+            return
+
+        out = QTextStream(file)
+        #QApplication.setOverrideCursor(Qt.WaitCursor)
+        #out << self.textEdit.toHtml()
+        out << self.nameEdit.text()+" "+self.latitudeEdit.text()+" "+self.longitudeEdit.text()+" "+self.dateandtimeEdit.text()
+        #QApplication.restoreOverrideCursor()
+
+        self.statusBar().showMessage("Zapisano w '%s'" % filename, 2000)
 
     def createDockWindows(self):
         # dock = QDockWidget('n', self)
@@ -384,6 +432,7 @@ class MainWindow(QMainWindow):
         font6 = QFont("Arial", 17)
         self.vLayout3 = QGridLayout()
         self.result = QLabel(self.latlong)
+        self.name = QLabel('Nazwa')
         self.latitude = QLabel('Szerokość')
         self.longitude = QLabel('Długość')
         self.dateandtime = QLabel('Data i Czas')
@@ -391,6 +440,10 @@ class MainWindow(QMainWindow):
         # self.result2 = QLabel('')
         # self.result3 = QLabel('')
         self.solarpanelcor = QLabel('WSPÓŁRZĘDNE PANELU SŁONECZNEGO: ')
+        self.nameEdit = QLineEdit()
+        self.nameEdit.setFixedHeight(28)
+        self.nameEdit.setFixedWidth(386)
+        self.nameEdit.setStatusTip("Wprowadź nazwę dla konfiguracji współrzędnych i czasu")
         self.latitudeEdit = QLineEdit()
         self.latitudeEdit.setFixedHeight(28)
         self.latitudeEdit.setFixedWidth(386)
@@ -404,7 +457,8 @@ class MainWindow(QMainWindow):
         self.dateandtimeEdit.setFixedWidth(386)
         self.dateandtimeEdit.setStatusTip("Wprowadzona data powinna być w formacie: rok/mies/dzień<spacja>godz:min:sek (np.: 2022/12/4 8:12:7)")
         self.button = QPushButton('Wylicz współrzędne / Przerwij liczenie', self)
-        self.button.clicked.connect(self.handleButton3)
+        self.button.clicked.connect(self.handleButton4)
+        self.name.setFont(font5)
         self.latitude.setFont(font5)
         self.longitude.setFont(font5)
         self.dateandtime.setFont(font5)
@@ -415,6 +469,8 @@ class MainWindow(QMainWindow):
         # self.result.setFont(font6)
         # self.result2.setFont(font6)
         # self.result3.setFont(font6)
+        self.vLayout3.addWidget(self.name)
+        self.vLayout3.addWidget(self.nameEdit)
         self.vLayout3.addWidget(self.latitude)
         self.vLayout3.addWidget(self.latitudeEdit)
         self.vLayout3.addWidget(self.longitude)
@@ -436,6 +492,10 @@ class MainWindow(QMainWindow):
         self.button.setStatusTip("Przerywa liczenie")
         if self.timerIsUp == False:
             self.o.lon, self.o.lat = '17.03333', '51.100000'  # Współrzędne Wrocławia
+            self.text1.setText("Wrocław")
+            font03 = QFont("Arial", 16)
+            font03.setBold(True)
+            self.text1.setFont(font03)
             self.timer.start(1000)
             self.timerIsUp = True
         else:
@@ -451,8 +511,50 @@ class MainWindow(QMainWindow):
             if self.latitudeEdit.text() and self.longitudeEdit.text():
                 self.o.lat = self.latitudeEdit.text()
                 self.o.lon = self.longitudeEdit.text()
+            if self.nameEdit.text():
+                self.text1.setText(self.nameEdit.text())
+                font03 = QFont("Arial", 16)
+                font03.setBold(True)
+                self.text1.setFont(font03)
             else:
+                self.text1.setText("Wrocław")
+                font03 = QFont("Arial", 16)
+                font03.setBold(True)
+                self.text1.setFont(font03)
                 self.o.lon, self.o.lat = '17.03333', '51.100000' # Współrzędne Wrocławia
+            self.timer.start(1000)
+            self.timerIsUp = True
+        else:
+            self.timer.stop()
+            self.timerIsUp = False
+            self.button.setStatusTip("Rozpoczyna Obliczenia")
+
+    def handleButton4(self):
+        self.button.setStatusTip("Przerywa liczenie")
+        if self.timerIsUp == False:
+            #zastąpic wlasna logika
+            # if self.latitudeEdit.text() and self.longitudeEdit.text():
+            #     self.o.lat = self.latitudeEdit.text()
+            #     self.o.lon = self.longitudeEdit.text()
+            if self.nameEdit.text():
+                self.text1.setText(self.nameEdit.text())
+                font03 = QFont("Arial", 16)
+                font03.setBold(True)
+                self.text1.setFont(font03)
+            else:
+                if self.latitudeEdit.text() and self.longitudeEdit.text():
+                    self.o.lat = self.latitudeEdit.text()
+                    self.o.lon = self.longitudeEdit.text()
+                    self.text1.setText("<b>Obliczenia dla:</b><br/> " + "Szerokość: " + self.latitudeEdit.text() + "°" + "  " + "Długość: " + self.longitudeEdit.text()+"°")
+                    font03 = QFont("Arial", 16)
+                    #font03.setBold(True)
+                    self.text1.setFont(font03)
+                else:
+                    self.text1.setText("Wrocław")
+                    font03 = QFont("Arial", 16)
+                    font03.setBold(True)
+                    self.text1.setFont(font03)
+                    self.o.lon, self.o.lat = '17.03333', '51.100000' # Współrzędne Wrocławia
             self.timer.start(1000)
             self.timerIsUp = True
         else:
