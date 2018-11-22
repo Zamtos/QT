@@ -50,7 +50,7 @@ from PySide2.QtGui import (QFont, QIcon, QKeySequence, QTextCharFormat,
 from PySide2.QtPrintSupport import QPrintDialog, QPrinter
 from PySide2.QtWidgets import (QAction, QApplication, QDialog, QDockWidget, QFrame,
         QFileDialog, QListWidget, QMainWindow, QMessageBox, QTextEdit, QLabel, QVBoxLayout, QWidget, QPushButton, QGridLayout, QLineEdit)
-
+#from QTWindow2 import NewWindow
 ##import dockwidgets_rc
 import datetime
 import ephem
@@ -98,7 +98,6 @@ class MainWindow(QMainWindow):
         self.latlong = "0"
         self.textEdit = QTextEdit()
         self.mainWidget = QWidget()
-
         self.mainLayout = QVBoxLayout()
         font0 = QFont("Arial", 12)
         font0.setBold(True)
@@ -182,7 +181,8 @@ class MainWindow(QMainWindow):
 #         self.newLetter()
 #         self.s = ephem.Sun()
 #         self.o = ephem.Observer()
-
+#     def NewWindow(self):
+#         newWin = NewWindow()
 
     def newLetter(self):
 
@@ -289,9 +289,9 @@ class MainWindow(QMainWindow):
                           "Azymut geograficzny i astronomiczny różni się o 180°.<p/> ")
 
     def createActions(self):
-        self.newLetterAct = QAction(QIcon.fromTheme('document-new', QIcon(':/images/new.png')), "&New Letter",
-                self, shortcut=QKeySequence.New,
-                statusTip="Create a new form letter", triggered=self.newLetter)
+        # self.newLetterAct = QAction(QIcon.fromTheme('document-new', QIcon(':/images/new.png')), "&New Letter",
+        #         self, shortcut=QKeySequence.New,
+        #         statusTip="Create a new form letter", triggered=self.newLetter())
         self.aboutAct = QAction("&O Programie", self,
                                 statusTip="Pokazuje pomoc dla programu",
                                 triggered=self.about)
@@ -312,7 +312,7 @@ class MainWindow(QMainWindow):
 
     def createMenus(self):
         self.fileMenu = self.menuBar().addMenu("&Plik")
-        self.fileMenu.addAction(self.newLetterAct)
+        # self.fileMenu.addAction(self.newLetterAct)
         self.fileMenu.addAction(self.DefaultAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.quitAct)
