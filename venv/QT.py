@@ -154,9 +154,24 @@ class MainWindow(QMainWindow):
         self.timer2 = QTimer()
         self.timer2.timeout.connect(self.update)
         self.timer2.start(1000)
-        #self.newLetter()
+        self.newLetter()
         self.s = ephem.Sun()
         self.o = ephem.Observer()
+        # zmienna = []
+        # i=0
+        # with open('Breslau.txt', 'r') as f:
+        #     for line in f:
+        #         zmienna.append(line)
+        #         i=i+1
+        #     print(zmienna)
+        #     f = self.nameEdit.text()
+        #     f = self.latitudeEdit.text()
+        #     f = self.longitudeEdit.text()
+        #     f = self.dateandtimeEdit.text()
+        #     print(self.nameEdit.text())
+        #     print(self.latitudeEdit.text())
+        #     print(self.longitudeEdit.text())
+        #     print(self.dateandtimeEdit.text())
 
 
 # class MainWindow(QMainWindow):
@@ -168,7 +183,7 @@ class MainWindow(QMainWindow):
 #         self.setCentralWidget(self.textEdit)
 #         self.createActions()
 #         self.createMenus()
-#         self.createToolBars()
+#         #self.createToolBars()
 #         self.createStatusBar()
 #         self.createDockWindows()
 #         self.setWindowTitle("Panel Słoneczny")
@@ -183,12 +198,19 @@ class MainWindow(QMainWindow):
 #         self.newLetter()
 #         self.s = ephem.Sun()
 #         self.o = ephem.Observer()
+
 #     def NewWindow(self):
 #         newWin = NewWindow()
+
+
 
     def newLetter(self):
 
         self.textEdit.clear()
+        self.text2 = QLabel("<b>Domyślne Współrzędne:</b><br/>"
+                            "Szerokość: 51° 06' 00''<br/>"
+                            "Długość: 17° 01' 00''<br/>"
+                            "(Współrzędne geograficzne Wrocławia)")
 
         cursor = self.textEdit.textCursor()
         cursor.movePosition(QTextCursor.Start)
@@ -207,7 +229,10 @@ class MainWindow(QMainWindow):
         tableFormat.setCellPadding(16)
         tableFormat.setAlignment(Qt.AlignRight)
         cursor.insertTable(1, 1, tableFormat)
-        cursor.insertText("Domyślne Zupa Współrzędne: ", boldFormat)
+        cursor.insertText("Domyślne Współrzędne: ", boldFormat)
+        self.text2.setText(self.nameEdit.text())
+        cursor.insertText
+        #self.text1.setText(self.nameEdit.text())
         cursor.insertBlock()
         cursor.insertBlock()
         cursor.insertText("Szerokość: 51° 06' 00''", textFormat)
@@ -310,6 +335,9 @@ class MainWindow(QMainWindow):
         self.saveAct = QAction(QIcon.fromTheme('document-save', QIcon(':/images/save.png')), "&Zapisz", self,
                                shortcut=QKeySequence.Save,
                                statusTip="Zapisz obecne współrzędne", triggered=self.save)
+        self.loadAct = QAction(QtGui.QIcon(':/images/open.png'), "&Wczytaj", self,
+                               shortcut=QtGui.QKeySequence.Open,
+                               statusTip="Wczytaj współrzędne z pliku", triggered=self.load)
         self.aboutAct = QAction("&O Programie", self,
                                 statusTip="Pokazuje pomoc dla programu",
                                 triggered=self.about)
@@ -331,6 +359,7 @@ class MainWindow(QMainWindow):
     def createMenus(self):
         self.fileMenu = self.menuBar().addMenu("&Plik")
         self.fileMenu.addAction(self.saveAct)
+        self.fileMenu.addAction(self.loadAct)
         self.fileMenu.addAction(self.DefaultAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.quitAct)
@@ -364,16 +393,70 @@ class MainWindow(QMainWindow):
         file = QFile(filename)
         if not file.open(QFile.WriteOnly | QFile.Text):
             QMessageBox.warning(self, "Panel Słoneczny",
-                                "Cannot write file %s:\n%s." % (filename, file.errorString()))
+                                "nie mógł zapisać pliku %s:\n%s." % (filename, file.errorString()))
             return
 
         out = QTextStream(file)
         #QApplication.setOverrideCursor(Qt.WaitCursor)
-        #out << self.textEdit.toHtml()
-        out << self.nameEdit.text()+" "+self.latitudeEdit.text()+" "+self.longitudeEdit.text()+" "+self.dateandtimeEdit.text()
+        #out << self.textEdit.toPlainText()
+        out <<self.nameEdit.text()+"\n"+self.latitudeEdit.text()+"\n"+self.longitudeEdit.text()+"\n"+self.dateandtimeEdit.text()
+        #out << "self.text1.setText("+self.nameEdit.text()+")"
         #QApplication.restoreOverrideCursor()
 
         self.statusBar().showMessage("Zapisano w '%s'" % filename, 2000)
+
+    def load(self):
+        filename, _ = QFileDialog.getOpenFileName(self)
+
+        if not filename:
+            return
+
+        file = QFile(filename)
+        if not file.open(QFile.ReadOnly | QFile.Text):
+            QMessageBox.warning(self, "Panel Słoneczny",
+                                          "nie mógł wczytać pliku %s:\n%s." % (filename, file.errorString()))
+            return
+
+        inf = QTextStream(file)
+        #QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        self.textEdit.setPlainText(inf.readAll())
+        #with open(file, 'r') as input:
+        with open('Breslau.txt', 'r') as f:
+            # f = self.nameEdit.text()
+            # f = self.latitudeEdit.text()
+            # f = self.longitudeEdit.text()
+            # f = self.dateandtimeEdit.text()
+            # print(self.nameEdit.text())
+            # print(self.latitudeEdit.text())
+            # print(self.longitudeEdit.text())
+            # print(self.dateandtimeEdit.text())
+            # for line in f:
+            #      print (line, end='')
+            f_name = f.readline()
+            #f_name = self.nameEdit.text()
+            self.text1.setText(f_name)
+            f_lat = f.readline()
+            f_lat = self.latitudeEdit.text()
+            f_lon = f.readline()
+            f_lon = self.longitudeEdit.text()
+            f_dnt = f.readline()
+            f_dnt = self.dateandtimeEdit.text()
+
+            # for line in f:
+            #     if 'name' in line:
+            #         self.text1.setText(line)
+                #if 'lat' in line:
+
+
+        #self.text1.setText(self.textEdit.setPlainText(inf.readAll()))
+        #self.text1.setText(self.nameEdit.text())
+
+
+        #QApplication.restoreOverrideCursor()
+
+        #self.setCurrentFile(filename)
+
+        self.statusBar().showMessage("Wczytano plik", 2000)
 
     def createDockWindows(self):
         # dock = QDockWidget('n', self)
@@ -502,6 +585,12 @@ class MainWindow(QMainWindow):
             self.timer.stop()
             self.timerIsUp = False
             self.button.setStatusTip("Rozpoczyna Obliczenia")
+
+    # def handleButton2(self):
+    #     print(self.nameEdit.text())
+    #     print(self.latitudeEdit.text())
+    #     print(self.longitudeEdit.text())
+    #     print(self.dateandtimeEdit.text())
 
 
     def handleButton3(self):
