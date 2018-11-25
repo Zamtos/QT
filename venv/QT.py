@@ -50,7 +50,7 @@ from PySide2.QtGui import (QFont, QIcon, QKeySequence, QTextCharFormat,
 from PySide2.QtPrintSupport import QPrintDialog, QPrinter
 from PySide2.QtWidgets import (QAction, QApplication, QDialog, QDockWidget, QFrame,
         QFileDialog, QListWidget, QMainWindow, QMessageBox, QTextEdit, QLabel, QVBoxLayout, QWidget, QPushButton, QGridLayout, QLineEdit)
-#from QTWindow2 import NewWindow
+from QTWindow2 import NewWindow
 ##import dockwidgets_rc
 import datetime
 import ephem
@@ -199,8 +199,8 @@ class MainWindow(QMainWindow):
 #         self.s = ephem.Sun()
 #         self.o = ephem.Observer()
 
-#     def NewWindow(self):
-#         newWin = NewWindow()
+    def NewWindow(self):
+        newWin = NewWindow()
 
 
 
@@ -596,7 +596,6 @@ class MainWindow(QMainWindow):
     def handleButton3(self):
         self.button.setStatusTip("Przerywa liczenie")
         if self.timerIsUp == False:
-            #zastąpic wlasna logika
             if self.latitudeEdit.text() and self.longitudeEdit.text():
                 self.o.lat = self.latitudeEdit.text()
                 self.o.lon = self.longitudeEdit.text()
