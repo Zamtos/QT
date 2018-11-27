@@ -199,8 +199,9 @@ class MainWindow(QMainWindow):
 #         self.s = ephem.Sun()
 #         self.o = ephem.Observer()
 
-    def NewWindow(self):
-        newWin = NewWindow()
+    def newWindow(self):
+        self.newWin = NewWindow()
+        self.newWin.show()
 
 
 
@@ -332,6 +333,10 @@ class MainWindow(QMainWindow):
         # self.newLetterAct = QAction(QIcon.fromTheme('document-new', QIcon(':/images/new.png')), "&New Letter",
         #         self, shortcut=QKeySequence.New,
         #         statusTip="Create a new form letter", triggered=self.newLetter())
+
+        self.newWindowAct = QAction(QIcon.fromTheme('document-new', QIcon(':/images/new.png')), "&Nowe Okno",
+                self, shortcut=QKeySequence.New,
+                statusTip="Create a new form letter", triggered=self.newWindow)
         self.saveAct = QAction(QIcon.fromTheme('document-save', QIcon(':/images/save.png')), "&Zapisz", self,
                                shortcut=QKeySequence.Save,
                                statusTip="Zapisz obecne współrzędne", triggered=self.save)
@@ -358,6 +363,7 @@ class MainWindow(QMainWindow):
 
     def createMenus(self):
         self.fileMenu = self.menuBar().addMenu("&Plik")
+        self.fileMenu.addAction(self.newWindowAct)
         self.fileMenu.addAction(self.saveAct)
         self.fileMenu.addAction(self.loadAct)
         self.fileMenu.addAction(self.DefaultAct)
@@ -374,7 +380,7 @@ class MainWindow(QMainWindow):
     def createStatusBar(self):
         self.statusBar().showMessage("Gotowy", 3000)
 
-    def saveing(self):
+    def saving(self):
         cursor = self.textEdit.textCursor()
         self.nameEdit.text()
         cursor.insertBlock()
@@ -662,4 +668,6 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     mainWin = MainWindow()
     mainWin.show()
+    newWin = NewWindow()
+    #newWin.show()
     sys.exit(app.exec_())
