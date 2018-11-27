@@ -51,7 +51,6 @@ from PySide2.QtPrintSupport import QPrintDialog, QPrinter
 from PySide2.QtWidgets import (QAction, QApplication, QDialog, QDockWidget, QFrame,
         QFileDialog, QListWidget, QMainWindow, QMessageBox, QTextEdit, QLabel, QVBoxLayout, QWidget, QPushButton, QGridLayout, QLineEdit)
 from QTWindow2 import NewWindow
-from QTWindow3 import NewWindow2
 ##import dockwidgets_rc
 import datetime
 import ephem
@@ -92,9 +91,9 @@ import ephem
 #        self.s.compute(self.o)
 #        hour_angle = self.o.sidereal_time() - self.s.ra
 
-class MainWindow(QMainWindow):
+class NewWindow2(QMainWindow):
     def __init__(self):
-        super(MainWindow, self).__init__()
+        super(NewWindow2, self).__init__()
 
         self.latlong = "0"
         self.textEdit = QTextEdit()
@@ -146,7 +145,7 @@ class MainWindow(QMainWindow):
         #self.createToolBars()
         self.createStatusBar()
         self.createDockWindows()
-        self.setWindowTitle("Panel Słoneczny")
+        self.setWindowTitle("Nowe Okno")
         self.rad = 0
         self.o = 0
         self.timer = QTimer()
@@ -203,6 +202,7 @@ class MainWindow(QMainWindow):
     def newWindow(self):
         self.newWin = NewWindow()
         self.newWin.show()
+
 
     def newWindow2(self):
         self.newWin2 = NewWindow2()
@@ -671,9 +671,7 @@ if __name__ == '__main__':
     import sys
 
     app = QApplication(sys.argv)
-    mainWin = MainWindow()
-    mainWin.show()
-    newWin = NewWindow()
     newWin2 = NewWindow2()
+    #newWin = NewWindow()
     #newWin.show()
     sys.exit(app.exec_())
