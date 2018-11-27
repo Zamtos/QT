@@ -158,6 +158,8 @@ class MainWindow(QMainWindow):
         self.newLetter()
         self.s = ephem.Sun()
         self.o = ephem.Observer()
+        self.x = "Wrocław"
+        print (self.x)
         # zmienna = []
         # i=0
         # with open('Breslau.txt', 'r') as f:
@@ -360,6 +362,9 @@ class MainWindow(QMainWindow):
                self,
                statusTip="Rozpoczyna obliczenia dla domyślnej lokacji (Wrocław)",
                triggered=self.handleButton2)
+        self.controlAct = QAction(QIcon.fromTheme('document-new', QIcon(':/images/new.png')), "&Sterowanie",
+                                    self,
+                                    statusTip="Create a new form letter", triggered=self.newWindow)
 
     def createToolBars(self):
         self.fileToolBar = self.addToolBar("File")
@@ -376,6 +381,7 @@ class MainWindow(QMainWindow):
         self.fileMenu.addAction(self.quitAct)
         self.fileMenu.addSeparator()
         self.editMenu = self.menuBar().addMenu("&Edycja")
+        self.editMenu.addAction(self.controlAct)
         self.viewMenu = self.menuBar().addMenu("&Widok")
         self.menuBar().addSeparator()
         self.helpMenu = self.menuBar().addMenu("&Pomoc")
